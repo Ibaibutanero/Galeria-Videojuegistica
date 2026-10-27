@@ -23,16 +23,16 @@ export const GameImage: React.FC<GameImageProps> = ({
   if (showFallback) {
     return (
       <div
-        className={`w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-shelf-800 to-shelf-900 border border-shelf-700/40 text-shelf-400 p-4 text-center select-none ${className}`}
+        className={`w-full h-full flex flex-col items-center justify-center bg-shelf-900 border border-shelf-800 text-shelf-400 p-3 text-center select-none ${className}`}
       >
-        <div className="w-12 h-12 rounded-xl bg-shelf-700/40 border border-shelf-600/30 flex items-center justify-center mb-2 shadow-inner">
-          <Gamepad2 className="w-6 h-6 text-shelf-400/80" />
+        <div className="w-10 h-10 rounded-xl bg-shelf-850 border border-shelf-750 flex items-center justify-center mb-2 shadow-subtle">
+          <Gamepad2 className="w-5 h-5 text-shelf-500" />
         </div>
-        <span className="text-xs font-medium text-shelf-400 line-clamp-2 px-1">
+        <span className="text-xs font-medium text-shelf-300 line-clamp-2 px-1 leading-snug">
           {alt}
         </span>
-        <span className="text-[10px] text-shelf-500 mt-1 uppercase tracking-wider font-mono">
-          Sin imagen
+        <span className="text-[10px] text-shelf-400 mt-1 uppercase tracking-wider font-mono">
+          Sin carátula
         </span>
       </div>
     );
@@ -41,11 +41,10 @@ export const GameImage: React.FC<GameImageProps> = ({
   return (
     <div className={`relative w-full h-full overflow-hidden bg-shelf-900 ${className}`}>
       {!isLoaded && (
-        <div className="absolute inset-0 bg-shelf-800/80 animate-pulse flex items-center justify-center">
-          <Gamepad2 className="w-8 h-8 text-shelf-700 animate-bounce" />
+        <div className="absolute inset-0 bg-shelf-850 animate-pulse flex items-center justify-center">
+          <Gamepad2 className="w-6 h-6 text-shelf-700" />
         </div>
       )}
-      {/* Usamos etiqueta img nativa con lazy loading para tolerar todos los dominios de GameBrain sin restricciones */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}

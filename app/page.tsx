@@ -12,7 +12,6 @@ import { SearchModal } from '@/components/search/SearchModal';
 import { BackupModal } from '@/components/backup/BackupModal';
 import { ApiKeyBanner } from '@/components/ui/ApiKeyBanner';
 import {
-  Sparkles,
   Search,
   X,
   Plus,
@@ -21,8 +20,8 @@ import {
   ArrowDown,
   Layers,
   Database,
+  ShieldCheck,
 } from 'lucide-react';
-import { GameBrainGame } from '@/types/gamebrain';
 
 export default function HomePage() {
   const router = useRouter();
@@ -107,17 +106,17 @@ export default function HomePage() {
 
   // Título según filtro
   const getFilterHeading = () => {
-    if (selectedFilter === 'all') return 'Todos los Videojuegos';
-    if (selectedFilter === 'playing') return 'Jugando Actualmente';
-    if (selectedFilter === 'pending') return 'Juegos Pendientes';
-    if (selectedFilter === 'completed') return 'Juegos Completados';
-    if (selectedFilter === 'paused') return 'En Pausa';
+    if (selectedFilter === 'all') return 'Todos los videojuegos';
+    if (selectedFilter === 'playing') return 'Jugando actualmente';
+    if (selectedFilter === 'pending') return 'Juegos pendientes';
+    if (selectedFilter === 'completed') return 'Juegos completados';
+    if (selectedFilter === 'paused') return 'En pausa';
     if (selectedFilter === 'abandoned') return 'Abandonados';
     return 'Biblioteca';
   };
 
   return (
-    <div className="min-h-screen bg-shelf-950 flex flex-col md:flex-row text-shelf-100 selection:bg-brand-purple selection:text-white">
+    <div className="min-h-screen bg-shelf-950 flex flex-col md:flex-row text-shelf-200">
       {/* Sidebar fijo a la izquierda */}
       <Sidebar
         isOpen={isSidebarOpen}
@@ -138,27 +137,32 @@ export default function HomePage() {
           {/* Banner de aviso si la API no está configurada y tampoco está en modo mock */}
           {isApiConfigured === false && !isMockMode && <ApiKeyBanner />}
 
-          {/* Aviso discreto si el modo de demostración está activo */}
+          {/* Aviso discreto si el modo de demostración está activo (Sin emojis) */}
           {isMockMode && (
-            <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs flex items-center justify-between">
-              <span>
-                🛡️ <strong>Modo Demostración activo:</strong> Desarrollando con catálogo local protegido. Cero peticiones a GameBrain para conservar cuota.
-              </span>
-              <span className="font-mono text-[10px] text-cyan-400/80 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
+            <div className="px-3.5 py-2 rounded-xl bg-shelf-900 border border-shelf-750 text-xs flex items-center justify-between text-shelf-300">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-shelf-400 shrink-0" />
+                <span>
+                  <strong>Modo Demostración activo:</strong> Catálogo local protegido. Cero peticiones de red para preservar cuota.
+                </span>
+              </div>
+              <span className="hidden sm:inline-block font-mono text-[10px] text-shelf-400 bg-shelf-850 px-2 py-0.5 rounded border border-shelf-750">
                 GAMEDATA_MOCK_MODE=true
               </span>
             </div>
           )}
 
-          {/* Cabecera de la sección actual */}
+          {/* Encabezado principal de la biblioteca */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                <span>{getFilterHeading()}</span>
-                <span className="text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-shelf-850 text-shelf-300 border border-shelf-750">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                  {getFilterHeading()}
+                </h1>
+                <span className="text-xs font-mono font-medium px-2.5 py-0.5 rounded-full bg-shelf-900 text-shelf-300 border border-shelf-750">
                   {filteredGames.length} {filteredGames.length === 1 ? 'juego' : 'juegos'}
                 </span>
-              </h1>
+              </div>
               <p className="text-xs sm:text-sm text-shelf-400 mt-1">
                 {selectedPlatform !== 'all' ? (
                   <span>
@@ -166,43 +170,43 @@ export default function HomePage() {
                     <strong className="text-shelf-200">{selectedPlatform}</strong>
                   </span>
                 ) : (
-                  <span>Organiza tu biblioteca personal, registra horas y haz seguimiento</span>
+                  <span>Colección personal y seguimiento de progreso</span>
                 )}
               </p>
             </div>
 
-            {/* Botón principal de añadir y copia de seguridad */}
-            <div className="flex items-center gap-2.5">
+            {/* Acciones principales de la biblioteca */}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => handleOpenBackup('export')}
-                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2.5 rounded-xl bg-shelf-850 hover:bg-shelf-800 border border-shelf-750 text-shelf-300 hover:text-white font-medium text-xs sm:text-sm transition-all"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-shelf-900 hover:bg-shelf-850 border border-shelf-750 hover:border-shelf-700 text-shelf-300 hover:text-white font-medium text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple"
                 title="Copia de seguridad: Exportar o Importar JSON"
               >
-                <Database className="w-4 h-4 text-brand-purple" />
-                <span className="hidden sm:inline">Copia de seguridad</span>
+                <Database className="w-3.5 h-3.5 text-shelf-400" />
+                <span>Copia de seguridad</span>
               </button>
 
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs sm:text-sm shadow-glow hover:shadow-lg transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-brand-purple hover:bg-brand-purple-hover text-white font-medium text-xs shadow-subtle transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 <span>Añadir juego</span>
               </button>
             </div>
           </div>
 
-          {/* Barra de Filtros, Búsqueda y Ordenación */}
-          <div className="p-3 sm:p-4 rounded-2xl bg-shelf-900/70 border border-shelf-800 space-y-3 backdrop-blur-sm shadow-sm">
-            {/* Fila 1: Filtros de Estado */}
-            <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1">
+          {/* Sistema unificado de Filtros, Búsqueda y Ordenación */}
+          <div className="p-3 sm:p-4 rounded-xl bg-shelf-900 border border-shelf-750/80 space-y-3 shadow-subtle">
+            {/* Pestañas de Estado */}
+            <div className="flex flex-wrap items-center gap-1 overflow-x-auto pb-0.5 custom-scrollbar">
               <button
                 onClick={() => setSelectedFilter('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple ${
                   selectedFilter === 'all'
-                    ? 'bg-shelf-800 text-white border border-shelf-700 shadow-sm'
-                    : 'text-shelf-400 hover:text-white hover:bg-shelf-850'
+                    ? 'bg-shelf-850 text-white font-semibold border border-shelf-700/80 shadow-subtle'
+                    : 'text-shelf-400 hover:text-white hover:bg-shelf-850/60'
                 }`}
               >
                 Todos
@@ -211,10 +215,10 @@ export default function HomePage() {
                 <button
                   key={st}
                   onClick={() => setSelectedFilter(st)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple ${
                     selectedFilter === st
-                      ? 'bg-brand-purple/20 text-brand-purple border border-brand-purple/40 font-semibold shadow-glow'
-                      : 'text-shelf-400 hover:text-white hover:bg-shelf-850'
+                      ? 'bg-shelf-850 text-white font-semibold border border-shelf-700/80 shadow-subtle'
+                      : 'text-shelf-400 hover:text-white hover:bg-shelf-850/60'
                   }`}
                 >
                   {STATUS_LABELS[st]}
@@ -222,22 +226,22 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Fila 2: Buscador por título, Plataforma y Ordenación */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-shelf-800/80">
-              {/* Buscador de juegos guardados */}
+            {/* Barra secundaria: Buscador en biblioteca, Plataforma y Ordenación */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-shelf-800">
+              {/* Buscador de títulos guardados */}
               <div className="relative flex-1 sm:max-w-xs">
-                <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-shelf-400" />
+                <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-shelf-400" />
                 <input
                   type="text"
                   value={librarySearch}
                   onChange={(e) => setLibrarySearch(e.target.value)}
-                  placeholder="Buscar por título guardado..."
-                  className="w-full pl-9 pr-8 py-1.5 bg-shelf-850 border border-shelf-750 rounded-xl text-xs text-white placeholder-shelf-500 focus:outline-none focus:border-brand-purple"
+                  placeholder="Buscar en mis juegos..."
+                  className="w-full pl-8 pr-7 py-1.5 bg-shelf-850 border border-shelf-750 rounded-lg text-xs text-white placeholder-shelf-500 focus:outline-none focus:border-brand-purple"
                 />
                 {librarySearch && (
                   <button
                     onClick={() => setLibrarySearch('')}
-                    className="absolute right-2.5 top-2 text-shelf-400 hover:text-white"
+                    className="absolute right-2 top-2 text-shelf-400 hover:text-white"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -248,12 +252,12 @@ export default function HomePage() {
               <div className="flex flex-wrap items-center gap-2">
                 {/* Filtro por plataforma */}
                 {availablePlatforms.length > 0 && (
-                  <div className="flex items-center gap-1.5 text-xs text-shelf-400 bg-shelf-850 px-2.5 py-1.5 rounded-xl border border-shelf-750">
+                  <div className="flex items-center gap-1.5 text-xs bg-shelf-850 px-2.5 py-1.5 rounded-lg border border-shelf-750">
                     <Layers className="w-3.5 h-3.5 text-shelf-400" />
                     <select
                       value={selectedPlatform}
                       onChange={(e) => setSelectedPlatform(e.target.value)}
-                      className="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
+                      className="bg-transparent text-shelf-200 text-xs focus:outline-none cursor-pointer"
                     >
                       <option value="all" className="bg-shelf-900 text-white">
                         Plataformas ({games.length})
@@ -267,36 +271,34 @@ export default function HomePage() {
                   </div>
                 )}
 
-                {/* Selector de Ordenación (Ordenar por) */}
-                <div className="flex items-center gap-1.5 text-xs text-shelf-400 bg-shelf-850 px-2.5 py-1.5 rounded-xl border border-shelf-750">
+                {/* Selector de Ordenación */}
+                <div className="flex items-center gap-1 text-xs bg-shelf-850 px-2.5 py-1.5 rounded-lg border border-shelf-750">
                   <ArrowUpDown className="w-3.5 h-3.5 text-shelf-400" />
-                  <span className="text-[11px] text-shelf-400 hidden sm:inline">Ordenar:</span>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as LibrarySortBy)}
-                    className="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
+                    className="bg-transparent text-shelf-200 text-xs focus:outline-none cursor-pointer"
                   >
                     <option value="addedAt" className="bg-shelf-900 text-white">
-                      Fecha de incorporación
+                      Fecha añadido
                     </option>
                     <option value="title" className="bg-shelf-900 text-white">
-                      Título
+                      Título (A-Z)
                     </option>
                     <option value="hoursPlayed" className="bg-shelf-900 text-white">
                       Horas jugadas
                     </option>
                   </select>
 
-                  {/* Alternar orden Ascendente / Descendente */}
                   <button
                     onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                    className="p-1 rounded text-shelf-400 hover:text-white transition-colors ml-1"
-                    title={sortOrder === 'desc' ? 'Orden descendente (invertir)' : 'Orden ascendente (invertir)'}
+                    className="p-0.5 rounded text-shelf-400 hover:text-white transition-colors"
+                    title={sortOrder === 'desc' ? 'Orden descendente' : 'Orden ascendente'}
                   >
                     {sortOrder === 'desc' ? (
-                      <ArrowDown className="w-3.5 h-3.5 text-brand-purple" />
+                      <ArrowDown className="w-3.5 h-3.5 text-brand-purple-light" />
                     ) : (
-                      <ArrowUp className="w-3.5 h-3.5 text-brand-purple" />
+                      <ArrowUp className="w-3.5 h-3.5 text-brand-purple-light" />
                     )}
                   </button>
                 </div>
@@ -304,7 +306,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Cuadrícula de videojuegos con proporción 2:3 y navegación a ficha individual */}
+          {/* Cuadrícula de videojuegos con proporción 2:3 */}
           <GameGrid
             games={filteredGames}
             loading={loading}
@@ -312,7 +314,6 @@ export default function HomePage() {
             selectedPlatform={selectedPlatform}
             searchQuery={librarySearch}
             onSelectGame={(game) => {
-              // Al pulsar una carátula, navega a la página de detalles bien diseñada
               router.push(`/games/${game.gameId}`);
             }}
             onEditGame={(game) => setGameForEdit(game)}
@@ -329,7 +330,7 @@ export default function HomePage() {
         </main>
       </div>
 
-      {/* Modal de Búsqueda de Videojuegos (en vivo o catálogo mock) */}
+      {/* Modal de Búsqueda */}
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
@@ -347,7 +348,7 @@ export default function HomePage() {
         onSave={handleSaveEdit}
       />
 
-      {/* Modal de Copia de Seguridad (Exportar / Importar JSON) */}
+      {/* Modal de Copia de Seguridad */}
       <BackupModal
         isOpen={isBackupOpen}
         onClose={() => setIsBackupOpen(false)}

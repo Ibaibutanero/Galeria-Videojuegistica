@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { GameBrainGame } from '@/types/gamebrain';
-import { GameStatus, STATUS_LABELS } from '@/types/library';
+import { GameStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/library';
 import { useLibrary } from '@/lib/context/library-context';
 import { GameImage } from '@/components/ui/GameImage';
-import { resolveGamePlatforms, ALLOWED_PLATFORMS, AllowedPlatform } from '@/lib/utils/platforms';
+import { resolveGamePlatforms, ALLOWED_PLATFORMS } from '@/lib/utils/platforms';
 import { X, Check, Loader2, Monitor, Clock, MessageSquare, Plus } from 'lucide-react';
 
 interface AddGameDialogProps {
@@ -40,7 +40,6 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
     setHoursPlayed(0);
     setNotes('');
 
-    // Obtener plataformas reales de GameBrain y aplicar la regla de la plataforma más nueva
     let isCancelled = false;
     const fetchPlatforms = async () => {
       try {
@@ -51,7 +50,6 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
           if (!isCancelled) {
             const resolved = resolveGamePlatforms(data.platforms);
             setAvailablePlatforms(resolved);
-            // Seleccionar por defecto la primera disponible o PC si existe
             const defaultPlat = resolved.includes('PC') ? 'PC' : resolved[0];
             setSelectedPlatform(defaultPlat || 'PC');
             return;
@@ -110,12 +108,12 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-2xl bg-shelf-900 border border-shelf-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md rounded-2xl bg-shelf-900 border border-shelf-750 shadow-modal overflow-hidden flex flex-col max-h-[90vh]">
         {/* Cabecera */}
-        <div className="flex items-center justify-between p-4 border-b border-shelf-800 bg-shelf-950/70">
+        <div className="flex items-center justify-between p-4 border-b border-shelf-750 bg-shelf-950/80">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-12 rounded-md overflow-hidden bg-shelf-850 shrink-0 border border-shelf-750">
+            <div className="w-9 h-12 rounded-lg overflow-hidden bg-shelf-850 shrink-0 border border-shelf-750">
               <GameImage src={game.image} alt={game.name} />
             </div>
             <div>
@@ -125,37 +123,36 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-shelf-400 hover:text-white hover:bg-shelf-800"
+            className="p-1.5 rounded-lg text-shelf-400 hover:text-white hover:bg-shelf-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto custom-scrollbar">
           {alreadyInLibrary && (
-            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-              <Check className="w-4 h-4" />
-              <span>Este juego ya se encuentra en tu biblioteca.</span>
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Este videojuego ya se encuentra guardado en tu biblioteca.</span>
             </div>
           )}
 
-          {/* Selector de Plataforma (Solo permitidas y la más nueva) */}
+          {/* Selector de Plataforma */}
           <div>
             <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Monitor className="w-3.5 h-3.5 text-shelf-400" />
-                <span>Plataforma disponible</span>
+                <span>Plataforma</span>
               </span>
               {loadingPlatforms && (
-                <span className="text-[10px] text-brand-purple flex items-center gap-1">
+                <span className="text-[10px] text-brand-purple-light flex items-center gap-1 font-mono">
                   <Loader2 className="w-3 h-3 animate-spin" />
                   Cargando...
                 </span>
               )}
             </label>
 
-            {/* Opciones en formato pastillas / pills */}
             <div className="flex flex-wrap gap-1.5 p-1 rounded-lg bg-shelf-850 border border-shelf-750">
               {availablePlatforms.map((plat) => (
                 <button
@@ -164,39 +161,41 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
                   onClick={() => setSelectedPlatform(plat)}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     selectedPlatform === plat
-                      ? 'bg-brand-purple text-white shadow-sm font-semibold ring-1 ring-white/20'
-                      : 'bg-shelf-900 text-shelf-300 hover:text-white hover:bg-shelf-750'
+                      ? 'bg-brand-purple text-white font-semibold shadow-subtle'
+                      : 'text-shelf-300 hover:text-white hover:bg-shelf-800'
                   }`}
                 >
                   {plat}
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-shelf-500 mt-1 italic">
-              * Mostrando siempre la versión de plataforma más reciente disponible.
-            </p>
           </div>
 
           {/* Estado Inicial */}
           <div>
             <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-1.5">
-              Estado Inicial
+              Estado de Progreso
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-              {(Object.keys(STATUS_LABELS) as GameStatus[]).map((st) => (
-                <button
-                  type="button"
-                  key={st}
-                  onClick={() => setStatus(st)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border text-center transition-all ${
-                    status === st
-                      ? 'bg-brand-purple/20 border-brand-purple text-brand-purple font-semibold shadow-glow'
-                      : 'bg-shelf-850 border-shelf-750 text-shelf-400 hover:text-shelf-200'
-                  }`}
-                >
-                  {STATUS_LABELS[st]}
-                </button>
-              ))}
+              {(Object.keys(STATUS_LABELS) as GameStatus[]).map((st) => {
+                const active = status === st;
+                const colors = STATUS_COLORS[st];
+                return (
+                  <button
+                    type="button"
+                    key={st}
+                    onClick={() => setStatus(st)}
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border text-center transition-all flex items-center justify-center gap-1.5 ${
+                      active
+                        ? `${colors.bg} ${colors.text} ${colors.border} font-bold shadow-subtle`
+                        : 'bg-shelf-850 border-shelf-750 text-shelf-400 hover:text-white hover:bg-shelf-800'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
+                    <span>{STATUS_LABELS[st]}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -204,7 +203,7 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
           <div>
             <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-shelf-400" />
-              <span>Horas Jugadas (inicialmente 0)</span>
+              <span>Horas Jugadas</span>
             </label>
             <input
               type="number"
@@ -216,7 +215,7 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
             />
           </div>
 
-          {/* Notas Personales Opcionales */}
+          {/* Notas Personales */}
           <div>
             <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
               <MessageSquare className="w-3.5 h-3.5 text-shelf-400" />
@@ -243,7 +242,7 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
             <button
               type="submit"
               disabled={alreadyInLibrary || isSubmitting}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-medium shadow-glow transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-brand-purple hover:bg-brand-purple-hover text-white text-xs font-medium shadow-subtle transition-all disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

@@ -25,6 +25,7 @@ import {
   Save,
   Check,
   Monitor,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function GameDetailPage({
@@ -59,7 +60,7 @@ export default function GameDetailPage({
 
   useEffect(() => {
     if (isNaN(gameId)) {
-      setError('Identificador de juego no válido.');
+      setError('Identificador de videojuego no válido.');
       setLoading(false);
       return;
     }
@@ -76,7 +77,7 @@ export default function GameDetailPage({
           setDetails(data);
         }
       } catch (err) {
-        setError('Error de conexión al cargar la información del juego.');
+        setError('Error al comunicar con los datos del videojuego.');
       } finally {
         setLoading(false);
       }
@@ -155,8 +156,8 @@ export default function GameDetailPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-shelf-950 flex flex-col items-center justify-center text-shelf-400">
-        <Loader2 className="w-8 h-8 text-brand-purple animate-spin mb-3" />
-        <p className="text-sm">Cargando ficha del videojuego...</p>
+        <Loader2 className="w-7 h-7 text-brand-purple animate-spin mb-3" />
+        <p className="text-xs sm:text-sm font-medium text-shelf-300">Cargando ficha del videojuego...</p>
       </div>
     );
   }
@@ -164,10 +165,10 @@ export default function GameDetailPage({
   if (error || !details) {
     return (
       <div className="min-h-screen bg-shelf-950 p-6 flex flex-col items-center justify-center text-center">
-        <div className="p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 max-w-md">
-          <AlertCircle className="w-8 h-8 text-rose-400 mx-auto mb-2" />
-          <h2 className="text-base font-bold text-white mb-1">Error al cargar juego</h2>
-          <p className="text-xs text-shelf-300 mb-4">{error || 'Juego no encontrado.'}</p>
+        <div className="p-6 rounded-2xl bg-shelf-900 border border-shelf-750 max-w-md shadow-card">
+          <AlertCircle className="w-8 h-8 text-rose-400 mx-auto mb-2.5" />
+          <h2 className="text-base font-bold text-white mb-1">Videojuego no disponible</h2>
+          <p className="text-xs text-shelf-400 mb-4">{error || 'No se encontró la ficha solicitada.'}</p>
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-shelf-800 hover:bg-shelf-750 text-xs font-medium text-white transition-colors"
@@ -184,15 +185,27 @@ export default function GameDetailPage({
   const description = details.description || details.short_description;
 
   return (
-    <div className="min-h-screen bg-shelf-950 text-shelf-100 selection:bg-brand-purple selection:text-white">
+    <div className="relative min-h-screen bg-shelf-950 text-shelf-200">
+      {/* Fondo cinematográfico sutil usando la carátula */}
+      {details.image && (
+        <div
+          className="absolute inset-0 top-0 h-[480px] w-full overflow-hidden opacity-10 pointer-events-none -z-10 blur-3xl scale-105"
+          style={{
+            backgroundImage: `url(${details.image})`,
+            backgroundPosition: 'center 20%',
+            backgroundSize: 'cover',
+          }}
+        />
+      )}
+
       <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        {/* Navegación Superior */}
+        {/* Barra superior de navegación */}
         <div className="flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-medium text-shelf-400 hover:text-white transition-colors px-3 py-1.5 rounded-lg bg-shelf-900 border border-shelf-800 hover:border-shelf-700"
+            className="inline-flex items-center gap-2 text-xs font-medium text-shelf-300 hover:text-white transition-colors px-3 py-1.5 rounded-lg bg-shelf-900 border border-shelf-750 hover:border-shelf-700 shadow-subtle"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             <span>Volver a mi biblioteca</span>
           </Link>
 
@@ -203,11 +216,11 @@ export default function GameDetailPage({
           )}
         </div>
 
-        {/* Ficha Principal de Detalles */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 bg-shelf-900/60 border border-shelf-800 rounded-2xl p-6 lg:p-8 backdrop-blur-sm shadow-xl">
-          {/* Columna Izquierda: Carátula destacada en tamaño grande (2:3) */}
-          <div className="md:col-span-4 lg:col-span-4 space-y-4">
-            <div className="relative aspect-[2/3] w-full rounded-2xl overflow-hidden shadow-2xl border border-shelf-700/80 bg-shelf-950">
+        {/* Ficha Principal de Detalles (2 Columnas) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Columna Izquierda: Carátula vertical destacada (2:3) */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="relative aspect-[2/3] w-full rounded-2xl overflow-hidden shadow-card border border-shelf-750 bg-shelf-950">
               <GameImage src={details.image} alt={details.name} />
 
               {userGame && (
@@ -217,11 +230,12 @@ export default function GameDetailPage({
               )}
             </div>
 
+            {/* Puntuación de GameBrain */}
             {ratingData && (
-              <div className="p-3 rounded-xl bg-shelf-850/80 border border-shelf-750 flex items-center justify-between text-xs">
-                <span className="text-shelf-400 flex items-center gap-1.5">
+              <div className="p-3 rounded-xl bg-shelf-900 border border-shelf-750 flex items-center justify-between text-xs shadow-subtle">
+                <span className="text-shelf-400 flex items-center gap-1.5 font-medium">
                   <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span>GameBrain Score</span>
+                  <span>Puntuación GameBrain</span>
                 </span>
                 <span className="font-mono font-bold text-amber-300 text-sm">
                   {ratingData.text}
@@ -229,37 +243,39 @@ export default function GameDetailPage({
               </div>
             )}
 
+            {/* Enlace oficial */}
             {details.link && (
               <a
                 href={details.link}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-2.5 px-3 rounded-xl bg-shelf-850 hover:bg-shelf-800 border border-shelf-750 text-shelf-300 hover:text-white text-xs flex items-center justify-center gap-2 transition-colors font-medium"
+                className="w-full py-2.5 px-3 rounded-xl bg-shelf-900 hover:bg-shelf-850 border border-shelf-750 text-shelf-300 hover:text-white text-xs flex items-center justify-center gap-2 transition-colors font-medium shadow-subtle"
               >
                 <span>Ficha oficial en GameBrain</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3.5 h-3.5 text-shelf-400" />
               </a>
             )}
           </div>
 
-          {/* Columna Derecha: Metadatos y Gestión del Progreso Personal */}
-          <div className="md:col-span-8 lg:col-span-8 space-y-6">
-            <div>
-              <div className="flex items-center gap-2 text-xs text-shelf-400 mb-2">
-                <span className="font-mono">ID: #{details.id}</span>
+          {/* Columna Derecha: Metadatos del juego y Bloque de Progreso Personal */}
+          <div className="lg:col-span-8 space-y-6">
+            {/* BLOQUE 1: Metadatos del Catálogo */}
+            <div className="p-6 rounded-2xl bg-shelf-900 border border-shelf-750/80 shadow-subtle space-y-4">
+              <div className="flex items-center gap-2 text-xs text-shelf-400">
+                <span className="font-mono text-[11px]">ID: #{details.id}</span>
                 {userGame && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-brand-purple/20 text-brand-purple border border-brand-purple/30 text-[10px] font-semibold">
+                  <span className="px-2 py-0.5 rounded-full bg-brand-purple/15 text-brand-purple-light border border-brand-purple/30 text-[10px] font-semibold">
                     En tu colección
                   </span>
                 )}
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
                 {details.name}
               </h1>
 
-              {/* Metadatos cuando están disponibles en los datos */}
-              <div className="flex flex-wrap items-center gap-2 mt-3 text-xs">
+              {/* Metadatos en pastillas elegantes */}
+              <div className="flex flex-wrap items-center gap-2 text-xs">
                 {details.year && (
                   <span className="px-3 py-1 rounded-md bg-shelf-850 border border-shelf-750 text-shelf-300 flex items-center gap-1.5 font-medium">
                     <Calendar className="w-3.5 h-3.5 text-shelf-400" />
@@ -274,15 +290,15 @@ export default function GameDetailPage({
                 )}
 
                 {details.genre && (
-                  <span className="px-3 py-1 rounded-md bg-shelf-850 border border-shelf-750 text-brand-purple font-medium">
+                  <span className="px-3 py-1 rounded-md bg-shelf-850 border border-shelf-750 text-brand-purple-light font-medium">
                     {details.genre}
                   </span>
                 )}
               </div>
 
-              {/* Plataformas disponibles (resueltas según la regla de más reciente) */}
+              {/* Plataformas disponibles (con jerarquía de más nueva) */}
               {platforms && platforms.length > 0 && (
-                <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
+                <div className="pt-1 flex flex-wrap items-center gap-1.5">
                   <span className="text-xs text-shelf-400 mr-1 flex items-center gap-1">
                     <Monitor className="w-3.5 h-3.5 text-shelf-500" />
                     <span>Plataformas:</span>
@@ -298,30 +314,30 @@ export default function GameDetailPage({
                 </div>
               )}
 
-              {/* Descripción (cuando esté disponible) */}
+              {/* Descripción */}
               {description && (
-                <div className="mt-5 text-sm text-shelf-300 leading-relaxed border-t border-shelf-800 pt-4 whitespace-pre-line">
+                <div className="pt-3 border-t border-shelf-800 text-xs sm:text-sm text-shelf-300 leading-relaxed whitespace-pre-line">
                   {description}
                 </div>
               )}
             </div>
 
-            {/* SECCIÓN DE PROGRESO PERSONAL */}
-            <div className="p-6 rounded-2xl bg-shelf-850/90 border border-shelf-750 shadow-inner space-y-5">
+            {/* BLOQUE 2: Seguimiento y Progreso Personal */}
+            <div className="p-6 rounded-2xl bg-shelf-900 border border-shelf-750/90 shadow-card space-y-5">
               <div className="flex items-center justify-between border-b border-shelf-800 pb-3">
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Gamepad2 className="w-4 h-4 text-brand-purple" />
+                  <Gamepad2 className="w-4 h-4 text-brand-purple-light" />
                   <span>Seguimiento y Progreso Personal</span>
                 </h3>
 
                 {userGame && (
-                  <span className="text-xs text-shelf-400">
-                    Añadido el {formatDate(userGame.addedAt)}
+                  <span className="text-xs font-mono text-shelf-400">
+                    Registrado
                   </span>
                 )}
               </div>
 
-              {/* Selector de Estado fácil de utilizar */}
+              {/* Selector de Estado */}
               <div>
                 <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-2">
                   Estado de Progreso
@@ -335,10 +351,10 @@ export default function GameDetailPage({
                         type="button"
                         key={st}
                         onClick={() => setStatus(st)}
-                        className={`px-3 py-2 rounded-xl text-xs font-medium border text-center transition-all flex items-center justify-center gap-1.5 ${
+                        className={`px-3 py-2 rounded-xl text-xs font-medium border text-center transition-all flex items-center justify-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple ${
                           active
-                            ? `${colors.bg} ${colors.text} ${colors.border} font-bold shadow-glow ring-1 ring-white/10`
-                            : 'bg-shelf-900 border-shelf-750 text-shelf-400 hover:text-white hover:bg-shelf-800'
+                            ? `${colors.bg} ${colors.text} ${colors.border} font-bold shadow-subtle ring-1 ring-white/10`
+                            : 'bg-shelf-850 border-shelf-750 text-shelf-400 hover:text-white hover:bg-shelf-800'
                         }`}
                       >
                         <span className={`w-1.5 h-1.5 rounded-full ${colors.dot}`} />
@@ -349,17 +365,17 @@ export default function GameDetailPage({
                 </div>
               </div>
 
-              {/* Plataforma y Horas Jugadas Editables */}
+              {/* Plataforma y Horas Jugadas */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                     <Monitor className="w-3.5 h-3.5 text-shelf-400" />
-                    <span>Tu Plataforma</span>
+                    <span>Plataforma</span>
                   </label>
                   <select
                     value={platform}
                     onChange={(e) => setPlatform(e.target.value)}
-                    className="w-full bg-shelf-900 border border-shelf-700 text-white text-xs sm:text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-brand-purple"
+                    className="w-full bg-shelf-850 border border-shelf-750 text-white text-xs sm:text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-brand-purple"
                   >
                     {platforms.map((p) => (
                       <option key={p} value={p}>
@@ -386,19 +402,21 @@ export default function GameDetailPage({
                       step="0.5"
                       value={hoursPlayed}
                       onChange={(e) => setHoursPlayed(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-shelf-900 border border-shelf-700 text-white text-xs sm:text-sm font-mono rounded-xl px-3 py-2 focus:outline-none focus:border-brand-purple"
+                      className="w-full bg-shelf-850 border border-shelf-750 text-white text-xs sm:text-sm font-mono rounded-xl px-3 py-2 focus:outline-none focus:border-brand-purple"
                     />
                     <button
                       type="button"
                       onClick={() => setHoursPlayed((prev) => Math.max(0, (prev || 0) + 1))}
-                      className="px-2.5 py-2 bg-shelf-900 hover:bg-shelf-800 border border-shelf-750 text-xs font-mono text-shelf-300 rounded-xl"
+                      className="px-2.5 py-2 bg-shelf-850 hover:bg-shelf-800 border border-shelf-750 text-xs font-mono text-shelf-300 hover:text-white rounded-xl transition-colors"
+                      title="Sumar 1 hora"
                     >
                       +1h
                     </button>
                     <button
                       type="button"
                       onClick={() => setHoursPlayed((prev) => Math.max(0, (prev || 0) + 5))}
-                      className="px-2.5 py-2 bg-shelf-900 hover:bg-shelf-800 border border-shelf-750 text-xs font-mono text-shelf-300 rounded-xl"
+                      className="px-2.5 py-2 bg-shelf-850 hover:bg-shelf-800 border border-shelf-750 text-xs font-mono text-shelf-300 hover:text-white rounded-xl transition-colors"
+                      title="Sumar 5 horas"
                     >
                       +5h
                     </button>
@@ -406,7 +424,7 @@ export default function GameDetailPage({
                 </div>
               </div>
 
-              {/* Notas Personales Editables */}
+              {/* Notas Personales */}
               <div>
                 <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                   <MessageSquare className="w-3.5 h-3.5 text-shelf-400" />
@@ -416,30 +434,30 @@ export default function GameDetailPage({
                   rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Añade tus impresiones, build actual, recuerdos o tareas pendientes..."
-                  className="w-full bg-shelf-900 border border-shelf-700 text-white text-xs sm:text-sm rounded-xl p-3 focus:outline-none focus:border-brand-purple resize-none placeholder-shelf-500"
+                  placeholder="Añade tus impresiones, build, recuerdos o tareas pendientes..."
+                  className="w-full bg-shelf-850 border border-shelf-750 text-white text-xs sm:text-sm rounded-xl p-3 focus:outline-none focus:border-brand-purple resize-none placeholder-shelf-500"
                 />
               </div>
 
-              {/* Botones de acción: Guardar cambios o Eliminar */}
+              {/* Botones de acción: Guardar o Eliminar */}
               <div className="pt-3 border-t border-shelf-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                 {userGame ? (
                   <>
                     <div>
                       {confirmDelete ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-rose-400 font-medium">¿Seguro que deseas eliminarlo?</span>
+                          <span className="text-xs text-rose-400 font-medium">¿Confirmas eliminarlo?</span>
                           <button
                             type="button"
                             onClick={handleDelete}
-                            className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"
+                            className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors"
                           >
                             Sí, eliminar
                           </button>
                           <button
                             type="button"
                             onClick={() => setConfirmDelete(false)}
-                            className="px-3 py-1.5 rounded-lg bg-shelf-800 text-shelf-300 text-xs hover:text-white"
+                            className="px-3 py-1.5 rounded-lg bg-shelf-800 text-shelf-300 text-xs hover:text-white transition-colors"
                           >
                             Cancelar
                           </button>
@@ -448,7 +466,7 @@ export default function GameDetailPage({
                         <button
                           type="button"
                           onClick={() => setConfirmDelete(true)}
-                          className="text-xs text-shelf-400 hover:text-rose-400 flex items-center gap-1.5 transition-colors py-1"
+                          className="text-xs text-shelf-400 hover:text-rose-400 flex items-center gap-1.5 transition-colors py-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-400"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Eliminar de mi biblioteca</span>
@@ -460,16 +478,16 @@ export default function GameDetailPage({
                       type="button"
                       onClick={handleSaveProgress}
                       disabled={isSaving}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-glow transition-all disabled:opacity-50"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs sm:text-sm font-semibold shadow-subtle transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple"
                     >
                       {isSaving ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Guardando...</span>
+                          <span>Guardando cambios...</span>
                         </>
                       ) : saveSuccess ? (
                         <>
-                          <Check className="w-4 h-4 text-emerald-300" />
+                          <CheckCircle2 className="w-4 h-4 text-emerald-300" />
                           <span>¡Guardado con éxito!</span>
                         </>
                       ) : (
@@ -481,12 +499,11 @@ export default function GameDetailPage({
                     </button>
                   </>
                 ) : (
-                  /* Si no está en la biblioteca todavía */
                   <button
                     type="button"
                     onClick={handleAdd}
                     disabled={isAdding}
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-glow transition-all disabled:opacity-50"
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white text-xs sm:text-sm font-semibold shadow-subtle transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-purple"
                   >
                     {isAdding ? (
                       <>

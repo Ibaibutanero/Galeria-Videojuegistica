@@ -249,7 +249,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                   <li>Fechas de incorporación y última actualización.</li>
                 </ul>
                 <p className="text-[11px] text-shelf-400 pt-1">
-                  💡 Este archivo no altera tu colección actual y podrás guardarlo como respaldo o
+                  Este archivo no altera tu colección actual y podrás guardarlo como respaldo o
                   utilizarlo en otro navegador.
                 </p>
               </div>
@@ -258,7 +258,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                 <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2 animate-in fade-in">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>
-                    ¡Copia de seguridad descargada correctamente! Guárdala en un lugar seguro.
+                    Copia de seguridad descargada correctamente. Guárdala en un lugar seguro.
                   </span>
                 </div>
               )}
@@ -268,7 +268,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                   type="button"
                   onClick={handleExport}
                   disabled={exporting}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs sm:text-sm shadow-glow transition-all disabled:opacity-50"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-brand-purple hover:bg-brand-purple-hover text-white font-medium text-xs sm:text-sm shadow-subtle transition-all disabled:opacity-50"
                 >
                   {exporting ? (
                     <>
@@ -425,7 +425,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                           onClick={() => setImportMode('merge')}
                           className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                             importMode === 'merge'
-                              ? 'bg-brand-purple/15 border-brand-purple shadow-glow'
+                              ? 'bg-shelf-850 border-brand-purple shadow-subtle'
                               : 'bg-shelf-850/60 border-shelf-750 hover:bg-shelf-850'
                           }`}
                         >
@@ -442,7 +442,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                                 Combinar sin duplicar (Recomendado)
                               </span>
                             </div>
-                            <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                            <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/30">
                               Seguro
                             </span>
                           </div>
@@ -457,7 +457,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                           onClick={() => setImportMode('replace')}
                           className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                             importMode === 'replace'
-                              ? 'bg-rose-500/15 border-rose-500/80 shadow-glow'
+                              ? 'bg-shelf-850 border-rose-500/80 shadow-subtle'
                               : 'bg-shelf-850/60 border-shelf-750 hover:bg-shelf-850'
                           }`}
                         >
@@ -474,7 +474,7 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                                 Reemplazar biblioteca completa
                               </span>
                             </div>
-                            <span className="text-[10px] font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/30">
+                            <span className="text-[10px] font-semibold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/30">
                               Sobrescribe todo
                             </span>
                           </div>
@@ -524,10 +524,10 @@ export const BackupModal: React.FC<BackupModalProps> = ({
                             isImporting ||
                             (importMode === 'replace' && !confirmReplace)
                           }
-                          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white shadow-glow transition-all disabled:opacity-50 ${
+                          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-xs sm:text-sm text-white shadow-subtle transition-all disabled:opacity-50 ${
                             importMode === 'replace'
-                              ? 'bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600'
-                              : 'bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500'
+                              ? 'bg-rose-600 hover:bg-rose-500'
+                              : 'bg-brand-purple hover:bg-brand-purple-hover'
                           }`}
                         >
                           {isImporting ? (
