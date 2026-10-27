@@ -287,7 +287,16 @@ export function mockSearchGames(
       const matchName = game.name.toLowerCase().includes(cleanQuery);
       const matchGenre = game.genre ? game.genre.toLowerCase().includes(cleanQuery) : false;
       const matchDev = game.developer ? game.developer.toLowerCase().includes(cleanQuery) : false;
-      return matchName || matchGenre || matchDev;
+      const matchShortDesc = game.short_description ? game.short_description.toLowerCase().includes(cleanQuery) : false;
+      const matchDesc = game.description ? game.description.toLowerCase().includes(cleanQuery) : false;
+      
+      // Soporte para siglas y abreviaciones comunes
+      const isGta = cleanQuery === 'gta' && game.name.toLowerCase().includes('grand theft auto');
+      const isRdr = cleanQuery === 'rdr' && game.name.toLowerCase().includes('red dead redemption');
+      const isTotk = cleanQuery === 'totk' && game.name.toLowerCase().includes('tears of the kingdom');
+      const isBg3 = cleanQuery === 'bg3' && game.name.toLowerCase().includes('baldur');
+
+      return matchName || matchGenre || matchDev || matchShortDesc || matchDesc || isGta || isRdr || isTotk || isBg3;
     });
   }
 
