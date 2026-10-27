@@ -9,6 +9,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { GameGrid } from '@/components/games/GameGrid';
 import { EditGameModal } from '@/components/games/EditGameModal';
 import { SearchModal } from '@/components/search/SearchModal';
+import { BackupModal } from '@/components/backup/BackupModal';
 import { ApiKeyBanner } from '@/components/ui/ApiKeyBanner';
 import {
   Sparkles,
@@ -19,6 +20,7 @@ import {
   ArrowUp,
   ArrowDown,
   Layers,
+  Database,
 } from 'lucide-react';
 import { GameBrainGame } from '@/types/gamebrain';
 
@@ -47,9 +49,16 @@ export default function HomePage() {
   // Modals state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isBackupOpen, setIsBackupOpen] = useState(false);
+  const [backupTab, setBackupTab] = useState<'export' | 'import'>('export');
   const [gameForEdit, setGameForEdit] = useState<UserGame | null>(null);
   const [isApiConfigured, setIsApiConfigured] = useState<boolean | null>(null);
   const [isMockMode, setIsMockMode] = useState<boolean>(false);
+
+  const handleOpenBackup = (tab: 'export' | 'import' = 'export') => {
+    setBackupTab(tab);
+    setIsBackupOpen(true);
+  };
 
   // Check API configuration and mock mode on load
   useEffect(() => {
@@ -114,6 +123,7 @@ export default function HomePage() {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onOpenSearch={() => setIsSearchOpen(true)}
+        onOpenBackup={handleOpenBackup}
       />
 
       {/* Área Principal de Contenido */}
@@ -121,6 +131,7 @@ export default function HomePage() {
         <Header
           onOpenSearch={() => setIsSearchOpen(true)}
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          onOpenBackup={handleOpenBackup}
         />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
@@ -160,8 +171,18 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Botón principal de añadir */}
+            {/* Botón principal de añadir y copia de seguridad */}
             <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleOpenBackup('export')}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2.5 rounded-xl bg-shelf-850 hover:bg-shelf-800 border border-shelf-750 text-shelf-300 hover:text-white font-medium text-xs sm:text-sm transition-all"
+                title="Copia de seguridad: Exportar o Importar JSON"
+              >
+                <Database className="w-4 h-4 text-brand-purple" />
+                <span className="hidden sm:inline">Copia de seguridad</span>
+              </button>
+
               <button
                 onClick={() => setIsSearchOpen(true)}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs sm:text-sm shadow-glow hover:shadow-lg transition-all"
@@ -324,6 +345,13 @@ export default function HomePage() {
         game={gameForEdit}
         onClose={() => setGameForEdit(null)}
         onSave={handleSaveEdit}
+      />
+
+      {/* Modal de Copia de Seguridad (Exportar / Importar JSON) */}
+      <BackupModal
+        isOpen={isBackupOpen}
+        onClose={() => setIsBackupOpen(false)}
+        initialTab={backupTab}
       />
     </div>
   );

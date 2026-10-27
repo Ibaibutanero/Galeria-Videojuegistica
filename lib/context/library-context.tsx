@@ -8,6 +8,10 @@ import {
   UpdateUserGameInput,
   LibrarySortBy,
   SortDirection,
+  LibraryBackup,
+  BackupValidationResult,
+  ImportResult,
+  ImportMode,
 } from '@/types/library';
 import { libraryStorage } from '@/lib/storage/library-storage';
 
@@ -32,6 +36,10 @@ interface LibraryContextType {
   statusCounts: Record<'all' | GameStatus, number>;
   availablePlatforms: string[];
   filteredGames: UserGame[];
+  exportBackup: () => Promise<LibraryBackup>;
+  validateBackup: (rawContent: string | object) => BackupValidationResult;
+  importBackup: (backup: LibraryBackup, mode: ImportMode) => Promise<ImportResult>;
+  refreshLibrary: () => Promise<void>;
 }
 
 const LibraryContext = createContext<LibraryContextType | undefined>(undefined);
@@ -171,6 +179,24 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     });
   }, [games, selectedFilter, selectedPlatform, librarySearch, sortBy, sortOrder]);
 
+  const exportBackup = async (): Promise<LibraryBackup> => {
+    return libraryStorage.exportBackup();
+  };
+
+  const validateBackup = (rawContent: string | object): BackupValidationResult => {
+    return libraryStorage.validateBackup(rawContent);
+  };
+
+  const importBackup = async (backup: LibraryBackup, mode: ImportMode): Promise<ImportResult> => {
+    const result = await libraryStorage.importBackup(backup, mode);
+    await loadLibrary();
+    return result;
+  };
+
+  const refreshLibrary = async (): Promise<void> => {
+    await loadLibrary();
+  };
+
   const value = {
     games,
     loading,
@@ -192,6 +218,10 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     statusCounts,
     availablePlatforms,
     filteredGames,
+    exportBackup,
+    validateBackup,
+    importBackup,
+    refreshLibrary,
   };
 
   return <LibraryContext.Provider value={value}>{children}</LibraryContext.Provider>;

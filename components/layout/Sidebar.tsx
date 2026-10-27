@@ -15,6 +15,9 @@ import {
   X,
   Hourglass,
   Plus,
+  Download,
+  Upload,
+  Database,
 } from 'lucide-react';
 import { formatHours } from '@/lib/utils/formatters';
 
@@ -22,12 +25,14 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenSearch: () => void;
+  onOpenBackup: (tab?: 'export' | 'import') => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onClose,
   onOpenSearch,
+  onOpenBackup,
 }) => {
   const {
     games,
@@ -252,6 +257,42 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Plus className="w-4 h-4" />
               <span>Añadir nuevo juego</span>
             </button>
+          </div>
+
+          {/* Sección Copia de Seguridad */}
+          <div className="pt-3 border-t border-shelf-800/80">
+            <div className="px-3 mb-2 flex items-center justify-between">
+              <span className="text-[11px] font-bold text-shelf-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5" />
+                <span>Copia de seguridad</span>
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenBackup('export');
+                  onClose();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-shelf-400 hover:text-white hover:bg-shelf-900 transition-colors text-left"
+              >
+                <Download className="w-4 h-4 text-brand-purple shrink-0" />
+                <span>Exportar biblioteca</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenBackup('import');
+                  onClose();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-shelf-400 hover:text-white hover:bg-shelf-900 transition-colors text-left"
+              >
+                <Upload className="w-4 h-4 text-cyan-400 shrink-0" />
+                <span>Importar (.json)</span>
+              </button>
+            </div>
           </div>
         </div>
 

@@ -97,3 +97,35 @@ export const STATUS_COLORS: Record<
     dot: 'bg-rose-400',
   },
 };
+
+/**
+ * Estructura versionada para exportación e importación de copias de seguridad.
+ */
+export interface LibraryBackup {
+  version: number;
+  app: 'gameshelf';
+  exportedAt: string;
+  totalGames: number;
+  games: UserGame[];
+}
+
+export type ImportMode = 'merge' | 'replace';
+
+export interface BackupValidationResult {
+  valid: boolean;
+  version?: number;
+  error?: string;
+  backup?: LibraryBackup;
+  stats?: {
+    totalGames: number;
+    newGamesCount: number;
+    existingGamesCount: number;
+  };
+}
+
+export interface ImportResult {
+  success: boolean;
+  importedCount: number;
+  mode: ImportMode;
+  message: string;
+}

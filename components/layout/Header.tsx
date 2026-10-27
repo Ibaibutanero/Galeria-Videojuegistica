@@ -1,17 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Search, Sparkles, Menu, Layers, ShieldCheck } from 'lucide-react';
+import { Search, Sparkles, Menu, Layers, ShieldCheck, Database } from 'lucide-react';
 import { useLibrary } from '@/lib/context/library-context';
 
 interface HeaderProps {
   onOpenSearch: () => void;
   onToggleSidebar: () => void;
+  onOpenBackup?: (tab?: 'export' | 'import') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   onToggleSidebar,
+  onOpenBackup,
 }) => {
   const { games, selectedPlatform, setSelectedPlatform, availablePlatforms } = useLibrary();
   const [apiConfigured, setApiConfigured] = useState<boolean | null>(null);
@@ -113,6 +115,17 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           )}
         </div>
+
+        {/* Botón de copia de seguridad */}
+        <button
+          type="button"
+          onClick={() => onOpenBackup?.('export')}
+          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-shelf-900 hover:bg-shelf-850 border border-shelf-750 text-shelf-300 hover:text-white text-xs font-medium transition-colors"
+          title="Exportar o importar copia de seguridad de la biblioteca"
+        >
+          <Database className="w-3.5 h-3.5 text-brand-purple" />
+          <span>Copia</span>
+        </button>
 
         {/* Botón primario de Explorar */}
         <button
