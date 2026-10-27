@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Search, Sparkles, Menu, Key, CheckCircle2, AlertTriangle, Layers } from 'lucide-react';
+import { Search, Sparkles, Menu, Layers, ShieldCheck } from 'lucide-react';
 import { useLibrary } from '@/lib/context/library-context';
 
 interface HeaderProps {
@@ -15,16 +15,18 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { games, selectedPlatform, setSelectedPlatform, availablePlatforms } = useLibrary();
   const [apiConfigured, setApiConfigured] = useState<boolean | null>(null);
+  const [isMockMode, setIsMockMode] = useState<boolean>(false);
 
   useEffect(() => {
-    // Comprobar estado de la API sin exponer la clave
+    // Comprobar estado de la API y si el modo mock está activo
     fetch('/api/status')
       .then((res) => res.json())
-      .then((data) => setApiConfigured(Boolean(data?.configured)))
+      .then((data) => {
+        setApiConfigured(Boolean(data?.configured));
+        setIsMockMode(Boolean(data?.mockMode));
+      })
       .catch(() => setApiConfigured(false));
   }, []);
-
-  const totalHours = games.reduce((acc, g) => acc + (g.hoursPlayed || 0), 0);
 
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-shelf-800 bg-shelf-950/80 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between gap-4">
@@ -51,7 +53,9 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2.5">
             <Search className="w-4 h-4 text-shelf-400 group-hover:text-brand-purple transition-colors" />
             <span className="text-shelf-400 group-hover:text-shelf-300">
-              Buscar videojuegos en GameBrain...
+              {isMockMode
+                ? 'Buscar en catálogo local (Modo Demo)...'
+                : 'Buscar videojuegos en GameBrain...'}
             </span>
           </div>
           <kbd className="hidden sm:inline-flex items-center gap-1 font-mono text-[10px] bg-shelf-800 border border-shelf-700 text-shelf-400 px-1.5 py-0.5 rounded">
@@ -81,18 +85,23 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         )}
 
-        {/* Indicador de estado de API */}
+        {/* Indicador de estado de API / Modo Mock */}
         <div
           title={
-            apiConfigured === null
-              ? 'Verificando API...'
-              : apiConfigured
+            isMockMode
+              ? 'Modo Demostración Activo: Cero llamadas de red a GameBrain para no gastar cuota'
+              : apiConfigured === true
               ? 'GameBrain API Conectada'
-              : 'GameBrain API pendiente de configurar (.env.local)'
+              : 'GameBrain API pendiente de configurar'
           }
           className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-shelf-900"
         >
-          {apiConfigured === true ? (
+          {isMockMode ? (
+            <span className="flex items-center gap-1.5 text-cyan-400 border-cyan-500/30">
+              <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Modo Demo (Sin red)</span>
+            </span>
+          ) : apiConfigured === true ? (
             <span className="flex items-center gap-1.5 text-emerald-400 border-emerald-500/30">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>GameBrain API OK</span>
@@ -111,7 +120,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium text-xs shadow-glow transition-all"
         >
           <Sparkles className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">Explorar catálogo</span>
+          <span className="hidden sm:inline">Añadir juego</span>
           <span className="sm:hidden">Buscar</span>
         </button>
       </div>

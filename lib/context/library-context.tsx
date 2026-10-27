@@ -6,6 +6,8 @@ import {
   GameStatus,
   NewUserGameInput,
   UpdateUserGameInput,
+  LibrarySortBy,
+  SortDirection,
 } from '@/types/library';
 import { libraryStorage } from '@/lib/storage/library-storage';
 
@@ -18,6 +20,10 @@ interface LibraryContextType {
   setSelectedPlatform: (platform: string) => void;
   librarySearch: string;
   setLibrarySearch: (query: string) => void;
+  sortBy: LibrarySortBy;
+  setSortBy: (sort: LibrarySortBy) => void;
+  sortOrder: SortDirection;
+  setSortOrder: (order: SortDirection) => void;
   addGame: (input: NewUserGameInput) => Promise<UserGame>;
   updateGame: (id: string, updates: UpdateUserGameInput) => Promise<UserGame>;
   removeGame: (id: string) => Promise<boolean>;
@@ -36,6 +42,8 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const [selectedFilter, setSelectedFilter] = useState<'all' | GameStatus>('all');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
   const [librarySearch, setLibrarySearch] = useState<string>('');
+  const [sortBy, setSortBy] = useState<LibrarySortBy>('addedAt');
+  const [sortOrder, setSortOrder] = useState<SortDirection>('desc');
 
   // Carga inicial desde localStorage
   const loadLibrary = useCallback(async () => {
@@ -119,26 +127,49 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     return Array.from(set).sort();
   }, [games]);
 
+  // Filtros combinados + Ordenación en tiempo real
   const filteredGames = useMemo(() => {
-    return games.filter((g) => {
+    // 1. Filtrar
+    const filtered = games.filter((g) => {
+      // Filtro por estado
       if (selectedFilter !== 'all' && g.status !== selectedFilter) {
         return false;
       }
+      // Filtro por plataforma
       if (selectedPlatform !== 'all' && g.platform !== selectedPlatform) {
         return false;
       }
+      // Buscador por título entre los guardados
       if (librarySearch.trim() !== '') {
         const query = librarySearch.toLowerCase().trim();
         const matchesTitle = g.title.toLowerCase().includes(query);
-        const matchesNotes = g.notes.toLowerCase().includes(query);
-        const matchesPlatform = g.platform.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesNotes && !matchesPlatform) {
+        const matchesNotes = g.notes ? g.notes.toLowerCase().includes(query) : false;
+        if (!matchesTitle && !matchesNotes) {
           return false;
         }
       }
       return true;
     });
-  }, [games, selectedFilter, selectedPlatform, librarySearch]);
+
+    // 2. Ordenar
+    return filtered.sort((a, b) => {
+      let comparison = 0;
+
+      if (sortBy === 'title') {
+        comparison = a.title.localeCompare(b.title, 'es', { sensitivity: 'base' });
+      } else if (sortBy === 'hoursPlayed') {
+        comparison = (a.hoursPlayed || 0) - (b.hoursPlayed || 0);
+      } else {
+        // 'addedAt' (por defecto)
+        const dateA = new Date(a.addedAt).getTime();
+        const dateB = new Date(b.addedAt).getTime();
+        comparison = dateA - dateB;
+      }
+
+      // Si el orden es descendente, invertir
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
+  }, [games, selectedFilter, selectedPlatform, librarySearch, sortBy, sortOrder]);
 
   const value = {
     games,
@@ -149,6 +180,10 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     setSelectedPlatform,
     librarySearch,
     setLibrarySearch,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
     addGame,
     updateGame,
     removeGame,

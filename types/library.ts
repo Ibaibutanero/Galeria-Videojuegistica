@@ -5,6 +5,9 @@ export type GameStatus =
   | 'completed'
   | 'abandoned';
 
+export type LibrarySortBy = 'addedAt' | 'title' | 'hoursPlayed';
+export type SortDirection = 'desc' | 'asc';
+
 export interface UserGame {
   /** Identificador único del registro en la biblioteca personal */
   id: string;

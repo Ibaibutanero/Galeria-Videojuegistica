@@ -3,6 +3,7 @@ import {
   GameBrainSearchResponse,
   ApiErrorCode,
 } from '@/types/gamebrain';
+import { mockSearchGames, mockGetGameDetail } from '@/lib/gamebrain/mock-catalog';
 
 const GAMEBRAIN_BASE_URL = 'https://api.gamebrain.co/v1';
 
@@ -18,7 +19,18 @@ export class GameBrainError extends Error {
   }
 }
 
+/**
+ * Indica si el modo de demostración local está activo.
+ * Cuando está activo, no se realiza ninguna petición de red a GameBrain.
+ */
+export function isMockModeEnabled(): boolean {
+  return process.env.GAMEDATA_MOCK_MODE === 'true';
+}
+
 export function isGameBrainConfigured(): boolean {
+  if (isMockModeEnabled()) {
+    return true;
+  }
   const key = process.env.GAMEBRAIN_API_KEY;
   return Boolean(key && key.trim() !== '' && key !== 'tu_clave_de_gamebrain_aqui');
 }
@@ -36,7 +48,8 @@ function getApiKey(): string {
 }
 
 /**
- * Busca videojuegos en el catálogo de GameBrain por término de búsqueda.
+ * Busca videojuegos en el catálogo.
+ * Si GAMEDATA_MOCK_MODE=true, consulta el catálogo local sin hacer peticiones HTTP.
  */
 export async function searchGames(
   query: string,
@@ -45,6 +58,12 @@ export async function searchGames(
     offset?: number;
   } = {}
 ): Promise<GameBrainSearchResponse> {
+  // 1. Modo Demostración Local: cero llamadas HTTP
+  if (isMockModeEnabled()) {
+    return mockSearchGames(query, options);
+  }
+
+  // 2. Modo Real GameBrain API
   const apiKey = getApiKey();
   const limit = Math.min(Math.max(1, options.limit ?? 12), 50);
   const offset = Math.max(0, options.offset ?? 0);
@@ -61,8 +80,7 @@ export async function searchGames(
         'x-api-key': apiKey,
         Accept: 'application/json',
       },
-      // Revalidar o cachear en Next.js según necesidad
-      next: { revalidate: 300 }, // 5 minutos de caché para no gastar tokens innecesariamente
+      next: { revalidate: 300 },
     });
 
     if (!res.ok) {
@@ -90,9 +108,16 @@ export async function searchGames(
 }
 
 /**
- * Obtiene la ficha detallada de un videojuego por su identificador único de GameBrain.
+ * Obtiene la ficha detallada de un videojuego por su identificador único.
+ * Si GAMEDATA_MOCK_MODE=true, consulta el catálogo local sin hacer peticiones HTTP.
  */
 export async function getGameDetail(id: number | string): Promise<GameBrainGame> {
+  // 1. Modo Demostración Local: cero llamadas HTTP
+  if (isMockModeEnabled()) {
+    return mockGetGameDetail(id);
+  }
+
+  // 2. Modo Real GameBrain API
   const apiKey = getApiKey();
   const cleanId = String(id).trim();
 
@@ -109,7 +134,7 @@ export async function getGameDetail(id: number | string): Promise<GameBrainGame>
         'x-api-key': apiKey,
         Accept: 'application/json',
       },
-      next: { revalidate: 86400 }, // Caché de 24 horas para fichas de juego
+      next: { revalidate: 86400 },
     });
 
     if (!res.ok) {
@@ -150,7 +175,7 @@ async function handleApiError(res: Response): Promise<never> {
     case 402:
       throw new GameBrainError(
         'QUOTA_EXCEEDED',
-        'Se ha agotado la cuota diaria de tokens de tu cuenta de GameBrain (Error 402). Se reiniciará a medianoche UTC.',
+        'Se ha agotado la cuota diaria de tokens de tu cuenta de GameBrain (Error 402). Puedes activar GAMEDATA_MOCK_MODE=true en .env.local para continuar sin límites.',
         402
       );
     case 429:

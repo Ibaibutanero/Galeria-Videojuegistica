@@ -1,19 +1,30 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useLibrary } from '@/lib/context/library-context';
-import { UserGame, GameStatus, STATUS_LABELS } from '@/types/library';
+import { UserGame, GameStatus, STATUS_LABELS, LibrarySortBy } from '@/types/library';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { GameGrid } from '@/components/games/GameGrid';
-import { GameDetailModal } from '@/components/games/GameDetailModal';
 import { EditGameModal } from '@/components/games/EditGameModal';
 import { SearchModal } from '@/components/search/SearchModal';
 import { ApiKeyBanner } from '@/components/ui/ApiKeyBanner';
-import { Sparkles, Search, Layers, X, Plus } from 'lucide-react';
+import {
+  Sparkles,
+  Search,
+  X,
+  Plus,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Layers,
+} from 'lucide-react';
 import { GameBrainGame } from '@/types/gamebrain';
 
 export default function HomePage() {
+  const router = useRouter();
+
   const {
     games,
     loading,
@@ -23,6 +34,10 @@ export default function HomePage() {
     setSelectedPlatform,
     librarySearch,
     setLibrarySearch,
+    sortBy,
+    setSortBy,
+    sortOrder,
+    setSortOrder,
     filteredGames,
     updateGame,
     removeGame,
@@ -32,21 +47,18 @@ export default function HomePage() {
   // Modals state
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedGameForDetail, setSelectedGameForDetail] = useState<{
-    id: number;
-    title: string;
-    coverUrl?: string | null;
-    userGame?: UserGame;
-    catalogData?: GameBrainGame;
-  } | null>(null);
   const [gameForEdit, setGameForEdit] = useState<UserGame | null>(null);
   const [isApiConfigured, setIsApiConfigured] = useState<boolean | null>(null);
+  const [isMockMode, setIsMockMode] = useState<boolean>(false);
 
-  // Check API configuration on load
+  // Check API configuration and mock mode on load
   useEffect(() => {
     fetch('/api/status')
       .then((res) => res.json())
-      .then((data) => setIsApiConfigured(Boolean(data?.configured)))
+      .then((data) => {
+        setIsApiConfigured(Boolean(data?.configured));
+        setIsMockMode(Boolean(data?.mockMode));
+      })
       .catch(() => setIsApiConfigured(false));
   }, []);
 
@@ -59,7 +71,6 @@ export default function HomePage() {
       }
       if (e.key === 'Escape') {
         setIsSearchOpen(false);
-        setSelectedGameForDetail(null);
         setGameForEdit(null);
       }
     };
@@ -97,7 +108,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-shelf-950 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-shelf-950 flex flex-col md:flex-row text-shelf-100 selection:bg-brand-purple selection:text-white">
       {/* Sidebar fijo a la izquierda */}
       <Sidebar
         isOpen={isSidebarOpen}
@@ -112,12 +123,24 @@ export default function HomePage() {
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          {/* Banner de aviso si la API de GameBrain no está configurada */}
-          {isApiConfigured === false && <ApiKeyBanner />}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+          {/* Banner de aviso si la API no está configurada y tampoco está en modo mock */}
+          {isApiConfigured === false && !isMockMode && <ApiKeyBanner />}
+
+          {/* Aviso discreto si el modo de demostración está activo */}
+          {isMockMode && (
+            <div className="px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs flex items-center justify-between">
+              <span>
+                🛡️ <strong>Modo Demostración activo:</strong> Desarrollando con catálogo local protegido. Cero peticiones a GameBrain para conservar cuota.
+              </span>
+              <span className="font-mono text-[10px] text-cyan-400/80 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30">
+                GAMEDATA_MOCK_MODE=true
+              </span>
+            </div>
+          )}
 
           {/* Cabecera de la sección actual */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
                 <span>{getFilterHeading()}</span>
@@ -132,32 +155,32 @@ export default function HomePage() {
                     <strong className="text-shelf-200">{selectedPlatform}</strong>
                   </span>
                 ) : (
-                  <span>Tu catálogo visual de seguimiento y registro de horas</span>
+                  <span>Organiza tu biblioteca personal, registra horas y haz seguimiento</span>
                 )}
               </p>
             </div>
 
-            {/* Acciones principales */}
+            {/* Botón principal de añadir */}
             <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium text-xs sm:text-sm shadow-glow transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-purple to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs sm:text-sm shadow-glow hover:shadow-lg transition-all"
               >
                 <Plus className="w-4 h-4" />
-                <span>Añadir a biblioteca</span>
+                <span>Añadir juego</span>
               </button>
             </div>
           </div>
 
-          {/* Barra de filtros secundarios y buscador local */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-shelf-900/60 border border-shelf-800/80 mb-6 backdrop-blur-sm">
-            {/* Filtros rápidos por estado */}
-            <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto py-1">
+          {/* Barra de Filtros, Búsqueda y Ordenación */}
+          <div className="p-3 sm:p-4 rounded-2xl bg-shelf-900/70 border border-shelf-800 space-y-3 backdrop-blur-sm shadow-sm">
+            {/* Fila 1: Filtros de Estado */}
+            <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto pb-1">
               <button
                 onClick={() => setSelectedFilter('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   selectedFilter === 'all'
-                    ? 'bg-shelf-800 text-white border border-shelf-700'
+                    ? 'bg-shelf-800 text-white border border-shelf-700 shadow-sm'
                     : 'text-shelf-400 hover:text-white hover:bg-shelf-850'
                 }`}
               >
@@ -169,7 +192,7 @@ export default function HomePage() {
                   onClick={() => setSelectedFilter(st)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     selectedFilter === st
-                      ? 'bg-brand-purple/20 text-brand-purple border border-brand-purple/40 font-semibold'
+                      ? 'bg-brand-purple/20 text-brand-purple border border-brand-purple/40 font-semibold shadow-glow'
                       : 'text-shelf-400 hover:text-white hover:bg-shelf-850'
                   }`}
                 >
@@ -178,30 +201,89 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* Buscador dentro de la colección local */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <div className="relative flex-1 sm:w-56">
-                <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-shelf-400" />
+            {/* Fila 2: Buscador por título, Plataforma y Ordenación */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-shelf-800/80">
+              {/* Buscador de juegos guardados */}
+              <div className="relative flex-1 sm:max-w-xs">
+                <Search className="absolute left-3 top-2.5 w-3.5 h-3.5 text-shelf-400" />
                 <input
                   type="text"
                   value={librarySearch}
                   onChange={(e) => setLibrarySearch(e.target.value)}
-                  placeholder="Filtrar colección..."
-                  className="w-full pl-8 pr-7 py-1.5 bg-shelf-850 border border-shelf-750 rounded-lg text-xs text-white placeholder-shelf-500 focus:outline-none focus:border-brand-purple"
+                  placeholder="Buscar por título guardado..."
+                  className="w-full pl-9 pr-8 py-1.5 bg-shelf-850 border border-shelf-750 rounded-xl text-xs text-white placeholder-shelf-500 focus:outline-none focus:border-brand-purple"
                 />
                 {librarySearch && (
                   <button
                     onClick={() => setLibrarySearch('')}
-                    className="absolute right-2 top-2 text-shelf-400 hover:text-white"
+                    className="absolute right-2.5 top-2 text-shelf-400 hover:text-white"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
+
+              {/* Controles de Plataforma y Ordenación */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Filtro por plataforma */}
+                {availablePlatforms.length > 0 && (
+                  <div className="flex items-center gap-1.5 text-xs text-shelf-400 bg-shelf-850 px-2.5 py-1.5 rounded-xl border border-shelf-750">
+                    <Layers className="w-3.5 h-3.5 text-shelf-400" />
+                    <select
+                      value={selectedPlatform}
+                      onChange={(e) => setSelectedPlatform(e.target.value)}
+                      className="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
+                    >
+                      <option value="all" className="bg-shelf-900 text-white">
+                        Plataformas ({games.length})
+                      </option>
+                      {availablePlatforms.map((plat) => (
+                        <option key={plat} value={plat} className="bg-shelf-900 text-white">
+                          {plat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Selector de Ordenación (Ordenar por) */}
+                <div className="flex items-center gap-1.5 text-xs text-shelf-400 bg-shelf-850 px-2.5 py-1.5 rounded-xl border border-shelf-750">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-shelf-400" />
+                  <span className="text-[11px] text-shelf-400 hidden sm:inline">Ordenar:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as LibrarySortBy)}
+                    className="bg-transparent text-white text-xs focus:outline-none cursor-pointer"
+                  >
+                    <option value="addedAt" className="bg-shelf-900 text-white">
+                      Fecha de incorporación
+                    </option>
+                    <option value="title" className="bg-shelf-900 text-white">
+                      Título
+                    </option>
+                    <option value="hoursPlayed" className="bg-shelf-900 text-white">
+                      Horas jugadas
+                    </option>
+                  </select>
+
+                  {/* Alternar orden Ascendente / Descendente */}
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="p-1 rounded text-shelf-400 hover:text-white transition-colors ml-1"
+                    title={sortOrder === 'desc' ? 'Orden descendente (invertir)' : 'Orden ascendente (invertir)'}
+                  >
+                    {sortOrder === 'desc' ? (
+                      <ArrowDown className="w-3.5 h-3.5 text-brand-purple" />
+                    ) : (
+                      <ArrowUp className="w-3.5 h-3.5 text-brand-purple" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Cuadrícula de videojuegos */}
+          {/* Cuadrícula de videojuegos con proporción 2:3 y navegación a ficha individual */}
           <GameGrid
             games={filteredGames}
             loading={loading}
@@ -209,12 +291,8 @@ export default function HomePage() {
             selectedPlatform={selectedPlatform}
             searchQuery={librarySearch}
             onSelectGame={(game) => {
-              setSelectedGameForDetail({
-                id: game.gameId,
-                title: game.title,
-                coverUrl: game.coverUrl,
-                userGame: game,
-              });
+              // Al pulsar una carátula, navega a la página de detalles bien diseñada
+              router.push(`/games/${game.gameId}`);
             }}
             onEditGame={(game) => setGameForEdit(game)}
             onDeleteGame={handleDeleteGame}
@@ -223,38 +301,24 @@ export default function HomePage() {
               setSelectedFilter('all');
               setSelectedPlatform('all');
               setLibrarySearch('');
+              setSortBy('addedAt');
+              setSortOrder('desc');
             }}
           />
         </main>
       </div>
 
-      {/* Modal de Búsqueda GameBrain */}
+      {/* Modal de Búsqueda de Videojuegos (en vivo o catálogo mock) */}
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSelectGame={(game) => {
           setIsSearchOpen(false);
-          setSelectedGameForDetail({
-            id: game.id,
-            title: game.title,
-            coverUrl: game.coverUrl,
-            catalogData: game.catalogData,
-          });
+          router.push(`/games/${game.id}`);
         }}
       />
 
-      {/* Modal de Ficha de Juego (Detalles + Gestión) */}
-      <GameDetailModal
-        isOpen={Boolean(selectedGameForDetail)}
-        game={selectedGameForDetail}
-        onClose={() => setSelectedGameForDetail(null)}
-        onOpenEdit={(userGame) => {
-          setSelectedGameForDetail(null);
-          setGameForEdit(userGame);
-        }}
-      />
-
-      {/* Modal de Edición de Datos Personales */}
+      {/* Modal de Edición Rápida */}
       <EditGameModal
         isOpen={Boolean(gameForEdit)}
         game={gameForEdit}
