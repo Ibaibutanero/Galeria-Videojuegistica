@@ -7,6 +7,7 @@ import { useLibrary } from '@/lib/context/library-context';
 import { GameImage } from '@/components/ui/GameImage';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatHours, formatDate, formatRating } from '@/lib/utils/formatters';
+import { resolveGamePlatforms } from '@/lib/utils/platforms';
 import {
   X,
   Plus,
@@ -117,6 +118,21 @@ export const GameDetailModal: React.FC<GameDetailModalProps> = ({
     };
   }, [game, isOpen]);
 
+  // Resolver plataformas según regla de prioridad y plataformas permitidas
+  const platformsAvailable = resolveGamePlatforms(details?.platforms);
+
+  // Actualizar plataforma seleccionada al cambiar plataformas disponibles
+  useEffect(() => {
+    if (platformsAvailable.length > 0) {
+      if (!platformsAvailable.includes(addPlatform as any)) {
+        setAddPlatform(platformsAvailable[0]);
+      }
+      if (!platformsAvailable.includes(editPlatform as any)) {
+        setEditPlatform(platformsAvailable[0]);
+      }
+    }
+  }, [platformsAvailable]);
+
   if (!isOpen || !game) return null;
 
   const title = details?.name || game.title;
@@ -124,9 +140,6 @@ export const GameDetailModal: React.FC<GameDetailModalProps> = ({
   const releaseYear = details?.year || (details?.release_date ? new Date(details.release_date).getFullYear() : undefined);
   const ratingData = details?.rating ? formatRating(details.rating.mean) : null;
   const description = details?.description || details?.short_description;
-
-  const platformsAvailable =
-    details?.platforms?.map((p) => p.name) || ['PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X|S', 'Nintendo Switch', 'Steam Deck'];
 
   const handleAddToLibrary = async () => {
     try {
@@ -255,15 +268,15 @@ export const GameDetailModal: React.FC<GameDetailModalProps> = ({
                   )}
                 </div>
 
-                {/* Plataformas disponibles */}
-                {details?.platforms && details.platforms.length > 0 && (
+                {/* Plataformas disponibles (resueltas con regla de más reciente) */}
+                {platformsAvailable && platformsAvailable.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {details.platforms.map((p) => (
+                    {platformsAvailable.map((plat) => (
                       <span
-                        key={p.value}
-                        className="text-[11px] font-mono px-2 py-0.5 rounded bg-shelf-850 text-shelf-400 border border-shelf-800"
+                        key={plat}
+                        className="text-[11px] font-mono font-medium px-2.5 py-1 rounded-md bg-shelf-850 text-shelf-300 border border-shelf-750"
                       >
-                        {p.name}
+                        {plat}
                       </span>
                     ))}
                   </div>

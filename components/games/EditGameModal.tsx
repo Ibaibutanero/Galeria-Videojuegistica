@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { UserGame, GameStatus, STATUS_LABELS } from '@/types/library';
 import { X, Clock, MessageSquare, Monitor, Check } from 'lucide-react';
 import { GameImage } from '@/components/ui/GameImage';
+import { ALLOWED_PLATFORMS } from '@/lib/utils/platforms';
 
 interface EditGameModalProps {
   game: UserGame | null;
@@ -52,8 +53,6 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({
       setSaving(false);
     }
   };
-
-  const platformsList = ['PC', 'PlayStation 5', 'PlayStation 4', 'Xbox Series X|S', 'Xbox One', 'Nintendo Switch', 'Steam Deck', 'Móvil', 'Otro'];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
@@ -124,18 +123,17 @@ export const EditGameModal: React.FC<EditGameModalProps> = ({
                 <Monitor className="w-3.5 h-3.5 text-shelf-400" />
                 <span>Plataforma</span>
               </label>
-              <input
-                list="platforms-list"
+              <select
                 value={platform}
                 onChange={(e) => setPlatform(e.target.value)}
-                placeholder="Ej: PC, PS5, Switch..."
                 className="w-full px-3 py-2 rounded-lg bg-shelf-850 border border-shelf-700 text-white text-sm focus:outline-none focus:border-brand-purple"
-              />
-              <datalist id="platforms-list">
-                {platformsList.map((p) => (
-                  <option key={p} value={p} />
+              >
+                {ALLOWED_PLATFORMS.map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
                 ))}
-              </datalist>
+              </select>
             </div>
           </div>
 

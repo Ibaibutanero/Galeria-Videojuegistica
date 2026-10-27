@@ -5,6 +5,7 @@ import { GameBrainGame } from '@/types/gamebrain';
 import { GameStatus, STATUS_LABELS } from '@/types/library';
 import { useLibrary } from '@/lib/context/library-context';
 import { GameImage } from '@/components/ui/GameImage';
+import { resolveGamePlatforms, ALLOWED_PLATFORMS, AllowedPlatform } from '@/lib/utils/platforms';
 import { X, Check, Loader2, Monitor, Clock, MessageSquare, Plus } from 'lucide-react';
 
 interface AddGameDialogProps {
@@ -14,16 +15,6 @@ interface AddGameDialogProps {
   onAdded?: () => void;
 }
 
-const DEFAULT_PLATFORMS = [
-  'PC',
-  'PlayStation 5',
-  'PlayStation 4',
-  'Xbox Series X|S',
-  'Xbox One',
-  'Nintendo Switch',
-  'Steam Deck',
-];
-
 export const AddGameDialog: React.FC<AddGameDialogProps> = ({
   game,
   isOpen,
@@ -32,7 +23,7 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
 }) => {
   const { addGame, isGameInLibrary } = useLibrary();
 
-  const [availablePlatforms, setAvailablePlatforms] = useState<string[]>(DEFAULT_PLATFORMS);
+  const [availablePlatforms, setAvailablePlatforms] = useState<string[]>(Array.from(ALLOWED_PLATFORMS));
   const [selectedPlatform, setSelectedPlatform] = useState<string>('PC');
   const [status, setStatus] = useState<GameStatus>('pending');
   const [hoursPlayed, setHoursPlayed] = useState<number>(0);
@@ -49,7 +40,7 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
     setHoursPlayed(0);
     setNotes('');
 
-    // Obtener plataformas reales de GameBrain para este juego
+    // Obtener plataformas reales de GameBrain y aplicar la regla de la plataforma más nueva
     let isCancelled = false;
     const fetchPlatforms = async () => {
       try {
@@ -57,10 +48,12 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
         const res = await fetch(`/api/games/${game.id}`);
         if (res.ok) {
           const data: GameBrainGame = await res.json();
-          if (!isCancelled && data.platforms && data.platforms.length > 0) {
-            const platformNames = data.platforms.map((p) => p.name);
-            setAvailablePlatforms(platformNames);
-            setSelectedPlatform(platformNames[0] || 'PC');
+          if (!isCancelled) {
+            const resolved = resolveGamePlatforms(data.platforms);
+            setAvailablePlatforms(resolved);
+            // Seleccionar por defecto la primera disponible o PC si existe
+            const defaultPlat = resolved.includes('PC') ? 'PC' : resolved[0];
+            setSelectedPlatform(defaultPlat || 'PC');
             return;
           }
         }
@@ -72,7 +65,8 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
         }
       }
       if (!isCancelled) {
-        setAvailablePlatforms(DEFAULT_PLATFORMS);
+        const fallback = ['PC', 'PS5', 'Xbox Series X/S', 'Nintendo Switch'];
+        setAvailablePlatforms(fallback);
         setSelectedPlatform('PC');
       }
     };
@@ -146,31 +140,31 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
             </div>
           )}
 
-          {/* Selector de Plataforma */}
+          {/* Selector de Plataforma (Solo permitidas y la más nueva) */}
           <div>
             <label className="block text-xs font-semibold text-shelf-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Monitor className="w-3.5 h-3.5 text-shelf-400" />
-                <span>Plataforma</span>
+                <span>Plataforma disponible</span>
               </span>
               {loadingPlatforms && (
                 <span className="text-[10px] text-brand-purple flex items-center gap-1">
                   <Loader2 className="w-3 h-3 animate-spin" />
-                  Cargando opciones...
+                  Cargando...
                 </span>
               )}
             </label>
 
             {/* Opciones en formato pastillas / pills */}
-            <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto custom-scrollbar p-1 rounded-lg bg-shelf-850 border border-shelf-750">
+            <div className="flex flex-wrap gap-1.5 p-1 rounded-lg bg-shelf-850 border border-shelf-750">
               {availablePlatforms.map((plat) => (
                 <button
                   type="button"
                   key={plat}
                   onClick={() => setSelectedPlatform(plat)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     selectedPlatform === plat
-                      ? 'bg-brand-purple text-white shadow-sm font-semibold'
+                      ? 'bg-brand-purple text-white shadow-sm font-semibold ring-1 ring-white/20'
                       : 'bg-shelf-900 text-shelf-300 hover:text-white hover:bg-shelf-750'
                   }`}
                 >
@@ -178,6 +172,9 @@ export const AddGameDialog: React.FC<AddGameDialogProps> = ({
                 </button>
               ))}
             </div>
+            <p className="text-[10px] text-shelf-500 mt-1 italic">
+              * Mostrando siempre la versión de plataforma más reciente disponible.
+            </p>
           </div>
 
           {/* Estado Inicial */}

@@ -9,6 +9,7 @@ import { useLibrary } from '@/lib/context/library-context';
 import { GameImage } from '@/components/ui/GameImage';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatHours, formatDate, formatRating } from '@/lib/utils/formatters';
+import { resolveGamePlatforms } from '@/lib/utils/platforms';
 import {
   ArrowLeft,
   Calendar,
@@ -77,6 +78,14 @@ export default function GameDetailPage({
     fetchDetails();
   }, [gameId]);
 
+  const platforms = resolveGamePlatforms(details?.platforms);
+
+  useEffect(() => {
+    if (platforms.length > 0 && !platforms.includes(addPlatform as any)) {
+      setAddPlatform(platforms[0]);
+    }
+  }, [platforms]);
+
   const handleAdd = async () => {
     if (!details) return;
     setIsAdding(true);
@@ -125,7 +134,7 @@ export default function GameDetailPage({
           <p className="text-xs text-shelf-300 mb-4">{error || 'Juego no encontrado.'}</p>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-shelf-800 hover:bg-shelf-700 text-xs font-medium text-white transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-shelf-800 hover:bg-shelf-750 text-xs font-medium text-white transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Volver a la biblioteca</span>
@@ -136,7 +145,6 @@ export default function GameDetailPage({
   }
 
   const ratingData = details.rating ? formatRating(details.rating.mean) : null;
-  const platforms = details.platforms?.map((p) => p.name) || ['PC', 'PlayStation 5', 'Xbox', 'Switch'];
 
   return (
     <div className="min-h-screen bg-shelf-950 text-shelf-100">
@@ -154,9 +162,9 @@ export default function GameDetailPage({
 
         {/* Ficha Principal */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 bg-shelf-900/60 border border-shelf-800/80 rounded-2xl p-6 lg:p-8 backdrop-blur-sm">
-          {/* Carátula */}
+          {/* Carátula vertical 2:3 */}
           <div className="md:col-span-4 lg:col-span-3 space-y-4">
-            <div className="aspect-cover w-full rounded-xl overflow-hidden shadow-2xl border border-shelf-700/80 bg-shelf-950">
+            <div className="aspect-[2/3] w-full rounded-xl overflow-hidden shadow-2xl border border-shelf-700/80 bg-shelf-950">
               <GameImage src={details.image} alt={details.name} />
             </div>
 
@@ -191,7 +199,7 @@ export default function GameDetailPage({
               <div className="flex items-center gap-2 text-xs text-shelf-400 mb-2">
                 <span>GameBrain ID: #{details.id}</span>
                 {userGame && (
-                  <span className="px-2 py-0.5 rounded-full bg-brand-purple/20 text-brand-purple border border-brand-purple/30 text-[10px] font-semibold">
+                  <span className="px-2.5 py-0.5 rounded-full bg-brand-purple/20 text-brand-purple border border-brand-purple/30 text-[10px] font-semibold">
                     En tu biblioteca
                   </span>
                 )}
@@ -220,15 +228,15 @@ export default function GameDetailPage({
                 )}
               </div>
 
-              {/* Plataformas */}
-              {details.platforms && details.platforms.length > 0 && (
+              {/* Plataformas (solo permitidas, mostrando la más reciente) */}
+              {platforms && platforms.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {details.platforms.map((p) => (
+                  {platforms.map((p) => (
                     <span
-                      key={p.value}
-                      className="text-xs font-mono px-2 py-0.5 rounded bg-shelf-850 text-shelf-400 border border-shelf-800"
+                      key={p}
+                      className="text-xs font-mono font-medium px-2.5 py-1 rounded bg-shelf-850 text-shelf-300 border border-shelf-750"
                     >
-                      {p.name}
+                      {p}
                     </span>
                   ))}
                 </div>

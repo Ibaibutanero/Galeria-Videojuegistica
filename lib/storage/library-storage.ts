@@ -1,4 +1,5 @@
 import { UserGame, NewUserGameInput, UpdateUserGameInput } from '@/types/library';
+import { normalizePlatformName } from '@/lib/utils/platforms';
 
 export interface ILibraryStorage {
   getAll(): Promise<UserGame[]>;
@@ -23,7 +24,11 @@ class LocalStorageLibraryStorage implements ILibraryStorage {
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        return parsed;
+        // Normalizar nombres de plataforma almacenados para consistencia
+        return parsed.map((item) => ({
+          ...item,
+          platform: normalizePlatformName(item.platform),
+        }));
       }
       return [];
     } catch (error) {
@@ -43,7 +48,6 @@ class LocalStorageLibraryStorage implements ILibraryStorage {
 
   async getAll(): Promise<UserGame[]> {
     const list = this.readRaw();
-    // Ordenar por fecha de última actualización o adición descendente
     return list.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }
 
@@ -67,7 +71,7 @@ class LocalStorageLibraryStorage implements ILibraryStorage {
       gameId: input.gameId,
       title: input.title,
       coverUrl: input.coverUrl ?? null,
-      platform: input.platform || 'PC',
+      platform: normalizePlatformName(input.platform || 'PC'),
       status: input.status || 'pending',
       hoursPlayed: Math.max(0, input.hoursPlayed ?? 0),
       notes: input.notes || '',
@@ -96,7 +100,10 @@ class LocalStorageLibraryStorage implements ILibraryStorage {
     const current = list[index];
     const updated: UserGame = {
       ...current,
-      platform: updates.platform !== undefined ? updates.platform : current.platform,
+      platform:
+        updates.platform !== undefined
+          ? normalizePlatformName(updates.platform)
+          : current.platform,
       status: updates.status !== undefined ? updates.status : current.status,
       hoursPlayed:
         updates.hoursPlayed !== undefined
